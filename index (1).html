@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>สมุดเงินเดือน T/C:A</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:var(--tg-theme-bg-color,#ffffff); --fg:var(--tg-theme-text-color,#1b1a17); --muted:var(--tg-theme-hint-color,#707070);
+  --card:var(--tg-theme-secondary-bg-color,#f2f2f5); --accent:var(--tg-theme-button-color,#2a78d6); --accent-ink:var(--tg-theme-button-text-color,#ffffff);
+  --line:color-mix(in srgb,var(--muted) 30%,transparent); --good:#23863b; --bad:#c0392b; --warn:#a86a00; --warn-bg:color-mix(in srgb,#f0b429 22%,transparent);
+}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--fg)}
+body{font:18px/1.5 system-ui,-apple-system,"Noto Sans Thai","Leelawadee UI",sans-serif;padding:14px 16px calc(110px + env(safe-area-inset-bottom))}
+button,input{font:inherit;color:inherit}
+h1{font-size:24px;margin:2px 0 12px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);padding:5px;border-radius:14px;margin-bottom:16px}
+.tabs button{border:0;background:none;border-radius:10px;min-height:48px;font-size:17px;color:var(--muted);font-weight:600}
+.tabs button.on{background:var(--bg);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px}
+.label{font-size:16px;color:var(--muted);margin-bottom:8px;display:block}
+.big{font-size:22px;font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{flex:1;min-width:0;min-height:54px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-size:18px;font-weight:600;padding:6px 8px}
+.chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--bg))}
+.datebox{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--bg);border:2px solid var(--line);font-size:20px;font-weight:700;position:relative}
+.datebox input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.datebox small{font-size:15px;color:var(--accent);font-weight:600}
+.step{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step b{font-size:19px} .step small{display:block;font-size:14px;color:var(--muted)}
+.ctl{display:flex;align-items:center;gap:6px}
+.ctl button{width:56px;height:56px;border-radius:14px;border:0;background:var(--bg);font-size:28px;font-weight:700;color:var(--accent);box-shadow:inset 0 0 0 2px var(--line)}
+.ctl output{min-width:64px;text-align:center;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.ctl output small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;cursor:pointer}
+.toggle input{width:30px;height:30px;accent-color:var(--accent)}
+.sum{background:color-mix(in srgb,var(--accent) 12%,var(--card));border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.sum .big{font-size:28px;font-variant-numeric:tabular-nums}
+.sum small{display:block;color:var(--muted);font-size:15px}
+.note{background:var(--warn-bg);border-radius:12px;padding:12px 14px;font-size:16px;margin-bottom:14px}
+.info{color:var(--muted);font-size:15px;margin-top:8px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:4px}
+.field input{width:100%;min-height:56px;border-radius:12px;border:2px solid var(--line);background:var(--bg);padding:8px 14px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.field input:focus{outline:none;border-color:var(--accent)}
+.field small{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+.save{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);box-shadow:0 -2px 10px rgba(0,0,0,.12);display:grid;gap:8px}
+.save button{min-height:60px;border-radius:14px;border:0;font-size:20px;font-weight:800}
+.save .go{background:var(--accent);color:var(--accent-ink)}
+.save .del{background:none;color:var(--bad);min-height:44px;font-size:17px;font-weight:600}
+.lv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lv .chip{min-height:64px;font-size:19px}
+.quota{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;text-align:center}
+.quota div{background:var(--bg);border-radius:12px;padding:8px 4px}
+.quota b{display:block;font-size:22px} .quota span{font-size:13px;color:var(--muted)}
+.hidden{display:none}
+.err{color:var(--bad);font-weight:600}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="save" id="bar"><button class="go" id="go">✅ บันทึก</button><button class="del hidden" id="del"></button></div>
+<script>
+'use strict';
+const tg = window.Telegram && Telegram.WebApp;
+const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const TH_DOW = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+const LV = {vac: 'พักร้อน', sick: 'ลาป่วย', per: 'ลากิจ', abs: 'ขาดงาน'};
+const pad = n => String(n).padStart(2, '0');
+const isoD = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const add = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return isoD(d); };
+const thd = s => { const d = parse(s); return `${TH_DOW[d.getDay()]} ${d.getDate()} ${TH_MON[d.getMonth()]}`; };
+const money = v => Number(v || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+/* ข้อมูลที่บอทแนบมากับปุ่ม (อยู่หลัง # เบราว์เซอร์ไม่ส่งไปที่เว็บ) */
+let D = null;
+try {
+  const h = location.hash.slice(1);
+  if (h) { const b = atob(h.replace(/-/g, '+').replace(/_/g, '/')); D = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); }
+} catch (e) { D = null; }
+const today = (D && D.t) || isoD(new Date());
+const S0 = Object.assign({sal: 0, dil: 1000, sh: 220, inc: 0, sso: 0, tax: 0, oth: 0, vq: 13, auto: 1}, (D && D.s) || {});
+const OT = (D && D.o) || {}, LVS = (D && D.l) || {}, USED = Object.assign({vac: 0, sick: 0, per: 0, abs: 0}, (D && D.u) || {}), HOL = new Set((D && D.h) || []);
+const rate = S0.sal ? S0.sal / 21 / 8.5 : 0;
+const mode0 = new URLSearchParams(location.search).get('m');
+const st = {mode: ['ot', 'leave', 'set'].includes(mode0) ? mode0 : 'ot', d: today, h: [0, 0, 0], n: false, t: '', f: 1};
+function loadDay() {
+  const o = OT[st.d]; st.h = o ? [o[0], o[1], o[2]] : [0, 0, 0]; st.n = !!(o && o[3]);
+  const l = LVS[st.d]; st.t = l ? l[0] : ''; st.f = l ? l[1] : 1;
+}
+loadDay();
+const dayTag = s => { const d = parse(s), w = d.getDay(); return HOL.has(s) ? 'วันหยุดบริษัท' : (w === 0 || w === 6) ? 'วันเสาร์-อาทิตย์' : ''; };
+
+function dateCard() {
+  const y = add(today, -1);
+  const tag = dayTag(st.d);
+  return `<div class="card"><span class="label">วันที่</span>
+    <div class="row"><button class="chip ${st.d === today ? 'on' : ''}" data-d="${today}">วันนี้</button><button class="chip ${st.d === y ? 'on' : ''}" data-d="${y}">เมื่อวาน</button></div>
+    <label class="datebox"><span>📅 ${thd(st.d)}</span><small>เปลี่ยนวัน ▾</small><input type="date" id="pick" value="${st.d}" max="${add(today, 60)}"></label>
+    ${tag ? `<div class="info">🔸 ${tag}${st.mode === 'ot' ? ' — มักเป็นโอที 2 เท่า / 3 เท่า' : ''}</div>` : ''}</div>`;
+}
+function otView() {
+  const day = rate * (1.5 * st.h[0] + 2 * st.h[1] + 3 * st.h[2]);
+  const had = OT[st.d];
+  const row = (i, name, x) => `<div class="step"><div><b>${name}</b><small>${rate ? 'ชม.ละ ' + money(rate * x) + ' บาท' : ''}</small></div>
+    <div class="ctl"><button data-h="${i}" data-v="-0.5" aria-label="ลด">−</button><output>${st.h[i]}<small>ชม.</small></output><button data-h="${i}" data-v="0.5" aria-label="เพิ่ม">＋</button></div></div>`;
+  return (S0.sal ? '' : `<div class="note">ยังไม่ได้ใส่เงินเดือน ระบบจึงยังคิดเป็นเงินไม่ได้ กด <b>⚙️ ตั้งค่า</b> ด้านบนก่อน (ทำครั้งเดียว)</div>`)
+    + dateCard()
+    + (had ? `<div class="note">วันนี้มีบันทึกไว้แล้ว แก้ตัวเลขแล้วกดบันทึกได้เลย</div>` : '')
+    + `<div class="card"><span class="label">กด＋ เพิ่มทีละครึ่งชั่วโมง</span>${row(0, 'โอที 1.5 เท่า', 1.5)}${row(1, 'โอที 2 เท่า', 2)}${row(2, 'โอที 3 เท่า', 3)}
+      <label class="toggle"><span><b>🌙 เข้ากะดึกวันนี้</b><small style="display:block;color:var(--muted);font-size:14px">ได้ค่ากะ ${money(S0.sh)} บาท</small></span><input type="checkbox" id="night" ${st.n ? 'checked' : ''}></label></div>`
+    + (rate ? `<div class="sum"><small>วันนี้ได้ประมาณ</small><div class="big">${money(day + (st.n ? S0.sh : 0))} บาท</div><small>โอที ${money(day)}${st.n ? ' + ค่ากะ ' + money(S0.sh) : ''}</small></div>` : '');
+}
+function leaveView() {
+  const had = LVS[st.d];
+  const left = S0.vq - USED.vac;
+  const lose = st.t === 'sick' || st.t === 'per' || st.t === 'abs';
+  return dateCard()
+    + (had ? `<div class="note">วันนี้บันทึก <b>${LV[had[0]]}</b>${had[1] === 0.5 ? ' ครึ่งวัน' : ''} ไว้แล้ว เปลี่ยนแล้วกดบันทึก หรือกดลบด้านล่าง</div>` : '')
+    + `<div class="card"><span class="label">ลาแบบไหน</span><div class="lv">
+      ${Object.entries(LV).map(([k, n]) => `<button class="chip ${st.t === k ? 'on' : ''}" data-t="${k}">${{vac: '🏖', sick: '🤒', per: '📝', abs: '❌'}[k]} ${n}</button>`).join('')}</div>
+      <span class="label" style="margin-top:14px">กี่วัน</span>
+      <div class="row"><button class="chip ${st.f === 1 ? 'on' : ''}" data-f="1">เต็มวัน</button><button class="chip ${st.f === 0.5 ? 'on' : ''}" data-f="0.5">ครึ่งวัน</button></div></div>`
+    + (lose ? `<div class="note">⚠️ ${LV[st.t]} = เดือนถัดไปไม่ได้เบี้ยขยัน${st.t === 'abs' ? ' และหักเงินวันนั้น' : ''}</div>` : '')
+    + `<div class="card"><span class="label">วันลาปีนี้ (ใช้ไปแล้ว)</span><div class="quota">
+      <div><b>${left}</b><span>พักร้อนเหลือ<br>จาก ${S0.vq} วัน</span></div><div><b>${USED.per}</b><span>ลากิจ<br>จาก 3 วัน</span></div><div><b>${USED.sick}</b><span>ลาป่วย<br>จาก 30 วัน</span></div></div></div>`;
+}
+const FIELDS = [['sal', 'เงินเดือน', 'ดูในสลิปบริษัท ช่อง Salary'], ['dil', 'เบี้ยขยัน', 'ปกติ 1,000 ถ้าได้ไม่เท่านี้ให้แก้'], ['sh', 'ค่ากะดึก ต่อคืน', 'ปกติ 220'],
+  ['inc', 'รายรับประจำอื่น ๆ', 'เช่น ค่าตำแหน่ง ค่าครองชีพ รวมกัน (ไม่มีใส่ 0)'], ['sso', 'ประกันสังคม', 'ช่อง Social Security ในสลิป'],
+  ['tax', 'ภาษี', 'ช่อง W/H Tax ในสลิป (ไม่มีใส่ 0)'], ['oth', 'หักอื่น ๆ ประจำ', 'เช่น ฌาปนกิจ เงินกู้ ประกัน รวมกัน'], ['vq', 'วันพักร้อนต่อปี', 'ปกติ 13 วัน']];
+function setView() {
+  return `<div class="note">ทำครั้งเดียว ดูตัวเลขจาก <b>สลิปเงินเดือนของบริษัท</b> ใบล่าสุด ช่องไหนไม่มีใส่ 0</div><div class="card">`
+    + FIELDS.map(([k, n, h]) => `<div class="field"><label for="f_${k}">${n}</label><input id="f_${k}" inputmode="decimal" value="${S0[k] ? Number(S0[k]).toLocaleString('en-US') : (k === 'sal' ? '' : '0')}" placeholder="0"><small>${h}</small></div>`).join('')
+    + `<label class="toggle"><span><b>🧾 ส่งสลิปให้ทุกวันที่ 16</b></span><input type="checkbox" id="auto" ${S0.auto ? 'checked' : ''}></label></div>`;
+}
+function render() {
+  const t = {ot: '⏱ ลงโอที', leave: '🏖 ลางาน', set: '⚙️ ตั้งค่า'};
+  document.getElementById('app').innerHTML = `<div class="tabs">${Object.entries(t).map(([k, n]) => `<button data-m="${k}" class="${st.mode === k ? 'on' : ''}">${n}</button>`).join('')}</div>`
+    + (st.mode === 'ot' ? otView() : st.mode === 'leave' ? leaveView() : setView())
+    + (!tg || !tg.initData ? `<p class="err" style="margin-top:10px">เปิดหน้านี้จากปุ่มในแชทบอทผู้ช่วยเท่านั้น ถึงจะบันทึกได้</p>` : '');
+  const del = document.getElementById('del'), go = document.getElementById('go');
+  del.classList.add('hidden');
+  if (st.mode === 'ot') { go.textContent = '✅ บันทึกโอที'; if (OT[st.d]) { del.textContent = '🗑 ลบโอทีวันนี้'; del.classList.remove('hidden'); } }
+  else if (st.mode === 'leave') { go.textContent = st.t ? `✅ บันทึก${LV[st.t]}` : 'เลือกประเภทการลาก่อน'; go.disabled = !st.t; if (LVS[st.d]) { del.textContent = '🗑 ลบวันลาวันนี้'; del.classList.remove('hidden'); } }
+  else { go.textContent = '✅ บันทึกตั้งค่า'; }
+  if (st.mode !== 'leave') go.disabled = false;
+}
+function send(obj) {
+  if (!tg || !tg.initData) { alert('เปิดจากปุ่มในแชทบอทผู้ช่วยก่อนนะครับ'); return; }
+  try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
+  tg.sendData(JSON.stringify(obj));        // ส่งเข้าบอท แล้วหน้านี้ปิดเอง
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.m) { st.mode = b.dataset.m; render(); window.scrollTo(0, 0); return; }
+  if (b.dataset.d) { st.d = b.dataset.d; loadDay(); render(); return; }
+  if (b.dataset.h) { const i = +b.dataset.h; st.h[i] = Math.max(0, Math.min(16, st.h[i] + +b.dataset.v)); render(); return; }
+  if (b.dataset.t) { st.t = b.dataset.t; render(); return; }
+  if (b.dataset.f) { st.f = +b.dataset.f; render(); return; }
+  if (b.id === 'go') {
+    if (st.mode === 'ot') {
+      if (!st.h.some(x => x) && !st.n) { alert('ยังไม่ได้ใส่ชั่วโมงโอที กดปุ่ม ＋ ก่อน'); return; }
+      send({a: 'ot', d: st.d, h: st.h, n: st.n ? 1 : 0});
+    } else if (st.mode === 'leave') { if (st.t) send({a: 'lv', d: st.d, t: st.t, f: st.f}); }
+    else {
+      const s = {}; for (const [k, n] of FIELDS) { const v = parseFloat((document.getElementById('f_' + k).value || '0').replace(/,/g, '')); if (!isFinite(v) || v < 0) { alert('ช่อง ' + n + ' ใส่ตัวเลขไม่ถูก'); return; } s[k] = v; }
+      if (!s.sal) { alert('ใส่เงินเดือนก่อนนะครับ'); return; }
+      s.auto = document.getElementById('auto').checked ? 1 : 0;
+      send({a: 'set', s});
+    }
+  }
+  if (b.id === 'del') {
+    if (!confirm('ลบรายการของ ' + thd(st.d) + ' ?')) return;
+    send(st.mode === 'ot' ? {a: 'ot', d: st.d, h: [0, 0, 0], n: 0} : {a: 'lv', d: st.d, t: ''});
+  }
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'pick' && e.target.value) { st.d = e.target.value; loadDay(); render(); }
+  if (e.target.id === 'night') { st.n = e.target.checked; render(); }
+});
+if (tg) { tg.ready(); tg.expand(); }
+render();
+</script>
+</body>
+</html>
