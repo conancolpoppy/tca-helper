@@ -138,17 +138,22 @@ const period = k => { const [y, m] = k.split('-').map(Number); return [isoD(new 
 const hm = h => { const m = Math.round(h * 60); return `${Math.floor(m / 60)}:${pad(m % 60)}`; };
 
 /* ---------- ข้อมูลที่บอทแนบมากับปุ่ม (หลัง # ไม่ถูกส่งไปที่เว็บ) · ไม่มี = เปิดนอกบอท ใช้ไม่ได้ ---------- */
-let D = null;
-try {
-  // เทเลแกรมต่อท้าย #...&tgWebAppVersion=… มาด้วย → เอาเฉพาะก้อนข้อมูลของเรา (ส่วนที่ไม่มี =)
-  const h = (window.__H || location.hash).replace(/^#/, '').split('&').find(x => x && !x.includes('=')) || window.PREVIEW_HASH || '';
-  if (h) { const b = atob(h.replace(/-/g, '+').replace(/_/g, '/')); D = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); }
-} catch (e) { D = null; }
+let D = null, DIAG = '';
+const dec64 = x => { const b = atob(x.replace(/-/g, '+').replace(/_/g, '/')); return JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); };
+{
+  // เทเลแกรมต่อท้าย tgWebApp…=… มากับ # → ลองทุกช่วง เอาก้อนที่ถอดแล้วเป็นข้อมูลของเรา
+  const raw = (window.__H || location.hash || '').replace(/^#/, '');
+  const segs = raw.split(/[&#?]/).filter(Boolean);
+  const cands = [window.PREVIEW_HASH || '', new URLSearchParams(location.search).get('d') || ''];
+  for (const x of segs) { let y = x; try { y = decodeURIComponent(x); } catch (e) {} cands.push(y); if (y.includes('=') && !/^tgWebApp/.test(y)) cands.push(y.slice(y.indexOf('=') + 1)); }
+  for (const c of cands) { if (!c || /^tgWebApp/.test(c)) continue; try { const o = dec64(c.replace(/=+$/, '')); if (o && o.v) { D = o; break; } } catch (e) {} }
+  DIAG = segs.map(x => x.slice(0, 10) + ':' + x.length).join(' | ');
+}
 const inTg = () => !!(tg && typeof tg.sendData === 'function' && tg.platform && tg.platform !== 'unknown');
 const PREVIEW = !!window.PREVIEW;            // หน้าทดลองในแชตกับ Claude เท่านั้น (ไม่มีบน GitHub)
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
 if (!D || (!inTg() && !PREVIEW)) {
-  document.getElementById('app').innerHTML = `<section class="panel block"><h2 style="justify-content:center">📒 สมุดเงินเดือน</h2><p>เปิดจากปุ่ม <b>📒 ข้อมูล</b> หรือ <b>⚙️ ตั้งค่า</b> ในแชตบอทผู้ช่วยเท่านั้น</p><p class="hint">หน้านี้ไม่มีข้อมูลของใคร ข้อมูลของแต่ละคนบอทแนบมาให้ตอนกดปุ่ม</p><p class="hint" style="font-size:11px;opacity:.6">v3 · ${D ? "d" : "nod"} · ${(window.__H || "").length} · ${tg ? (tg.platform || "?") : "notg"}</p></section>`;
+  document.getElementById('app').innerHTML = `<section class="panel block"><h2 style="justify-content:center">📒 สมุดเงินเดือน</h2><p>เปิดจากปุ่ม <b>📒 ข้อมูล</b> หรือ <b>⚙️ ตั้งค่า</b> ในแชตบอทผู้ช่วยเท่านั้น</p><p class="hint">หน้านี้ไม่มีข้อมูลของใคร ข้อมูลของแต่ละคนบอทแนบมาให้ตอนกดปุ่ม</p><p class="hint" style="font-size:11px;opacity:.6">v4 · ${D ? "d" : "nod"} · ${(window.__H || "").length} · ${tg ? (tg.platform || "?") : "notg"}<br>${esc(DIAG)}</p></section>`;
   throw new Error('stop');
 }
 const ADM = !!D.adm;
