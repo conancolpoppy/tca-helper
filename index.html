@@ -139,7 +139,8 @@ const hm = h => { const m = Math.round(h * 60); return `${Math.floor(m / 60)}:${
 /* ---------- ข้อมูลที่บอทแนบมากับปุ่ม (หลัง # ไม่ถูกส่งไปที่เว็บ) · ไม่มี = เปิดนอกบอท ใช้ไม่ได้ ---------- */
 let D = null;
 try {
-  const h = location.hash.slice(1) || window.PREVIEW_HASH || '';
+  // เทเลแกรมต่อท้าย #...&tgWebAppVersion=… มาด้วย → เอาเฉพาะก้อนข้อมูลของเรา (ส่วนที่ไม่มี =)
+  const h = location.hash.slice(1).split('&').find(x => x && !x.includes('=')) || window.PREVIEW_HASH || '';
   if (h) { const b = atob(h.replace(/-/g, '+').replace(/_/g, '/')); D = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); }
 } catch (e) { D = null; }
 const inTg = () => !!(tg && typeof tg.sendData === 'function' && tg.platform && tg.platform !== 'unknown');
