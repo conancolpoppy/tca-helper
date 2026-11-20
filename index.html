@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>สมุดเงินเดือน T/C:A</title>
+<script>window.__H = location.hash;</script><!-- เก็บข้อมูลหลัง # ไว้ก่อนสคริปต์เทเลแกรมจะแก้ลิงก์ -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
@@ -140,14 +141,14 @@ const hm = h => { const m = Math.round(h * 60); return `${Math.floor(m / 60)}:${
 let D = null;
 try {
   // เทเลแกรมต่อท้าย #...&tgWebAppVersion=… มาด้วย → เอาเฉพาะก้อนข้อมูลของเรา (ส่วนที่ไม่มี =)
-  const h = location.hash.slice(1).split('&').find(x => x && !x.includes('=')) || window.PREVIEW_HASH || '';
+  const h = (window.__H || location.hash).replace(/^#/, '').split('&').find(x => x && !x.includes('=')) || window.PREVIEW_HASH || '';
   if (h) { const b = atob(h.replace(/-/g, '+').replace(/_/g, '/')); D = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); }
 } catch (e) { D = null; }
 const inTg = () => !!(tg && typeof tg.sendData === 'function' && tg.platform && tg.platform !== 'unknown');
 const PREVIEW = !!window.PREVIEW;            // หน้าทดลองในแชตกับ Claude เท่านั้น (ไม่มีบน GitHub)
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
 if (!D || (!inTg() && !PREVIEW)) {
-  document.getElementById('app').innerHTML = `<section class="panel block"><h2 style="justify-content:center">📒 สมุดเงินเดือน</h2><p>เปิดจากปุ่ม <b>📒 ข้อมูล</b> หรือ <b>⚙️ ตั้งค่า</b> ในแชตบอทผู้ช่วยเท่านั้น</p><p class="hint">หน้านี้ไม่มีข้อมูลของใคร ข้อมูลของแต่ละคนบอทแนบมาให้ตอนกดปุ่ม</p></section>`;
+  document.getElementById('app').innerHTML = `<section class="panel block"><h2 style="justify-content:center">📒 สมุดเงินเดือน</h2><p>เปิดจากปุ่ม <b>📒 ข้อมูล</b> หรือ <b>⚙️ ตั้งค่า</b> ในแชตบอทผู้ช่วยเท่านั้น</p><p class="hint">หน้านี้ไม่มีข้อมูลของใคร ข้อมูลของแต่ละคนบอทแนบมาให้ตอนกดปุ่ม</p><p class="hint" style="font-size:11px;opacity:.6">v3 · ${D ? "d" : "nod"} · ${(window.__H || "").length} · ${tg ? (tg.platform || "?") : "notg"}</p></section>`;
   throw new Error('stop');
 }
 const ADM = !!D.adm;
