@@ -177,7 +177,7 @@ const KEY = D.k || keyOf(today), [PA, PB] = period(KEY), PAY = D.pay || '', BN =
 const rate = S.sal ? S.sal / 21 / 8.5 : 0;
 const P0 = new URLSearchParams(location.search).get('m');
 const st = {tab: ['today', 'days', 'dash', 'pay', 'set'].includes(P0) ? P0 : 'today', sub: 'ot',
-  d: today, h: [0, 0, 0], n: false, t: '', f: 1, xi: X.inc.map(r => r.slice()), xd: X.ded.map(r => r.slice())};
+  edit: false, d: today, h: [0, 0, 0], n: false, t: '', f: 1, xi: X.inc.map(r => r.slice()), xd: X.ded.map(r => r.slice())};
 const isHol = s => HOL.has(s) || ([0, 6].includes(parse(s).getDay()) && !WK.has(s));
 function loadDay() {
   const o = OT[st.d]; st.h = o ? [o[0], o[1], o[2]] : [0, 0, 0]; st.n = !!(o && o[3]);
@@ -218,16 +218,27 @@ function dateCard() {
     ${isHol(st.d) ? `<div class="hint">🔸 ${HOL.has(st.d) ? 'วันหยุดบริษัท' : 'วันเสาร์-อาทิตย์'} — เวลาปกติเป็น 2 เท่า โอทีเป็น 3 เท่า</div>` : WK.has(st.d) ? '<div class="hint">🛠 วันทำงาน (บริษัทกำหนด)</div>' : ''}
     ${st.d < PA || st.d > PB ? `<div class="hint">วันนี้อยู่รอบ ${thk(keyOf(st.d))}</div>` : ''}`;
 }
+function homeView(p) {
+  const w = D.w, WL = (D.wl || []).slice().reverse();
+  const otTxt = o => o && (o[0] || o[1] || o[2]) ? [['1.5', o[0]], ['2', o[1]], ['3', o[2]]].filter(x => x[1]).map(x => `${x[0]}×${hm(x[1])}`).join(' · ') : 'ไม่มีโอที';
+  return hero(p)
+    + (S.sal ? '' : `<div class="note">ยังไม่ได้ใส่เงินเดือน กดแท็บ <b>ตั้งค่า</b> ก่อน บอทถึงคิดเป็นเงินได้</div>`)
+    + `<section class="panel clock"><div class="status"><span class="dot" style="background:${w ? 'var(--good)' : 'var(--line)'}"></span>
+        <b style="font-size:18px">${w ? `ทำงานอยู่ · เข้า ${w.slice(11)}${w.slice(0, 10) !== today ? ' (' + thd(w.slice(0, 10)) + ')' : ''}` : 'ยังไม่ได้เข้างาน'}</b></div>
+        <div>${w ? 'เลิกงานแล้วกด <b>🔴 ออกงาน</b> ในแชต' : 'ถึงที่ทำงานกด <b>🟢 เข้างาน</b> ในแชต'}</div>
+        <div class="hint">แค่กดเข้า-ออก บอทคิดโอที วันหยุด และค่ากะดึกให้เอง</div></section>`
+    + `<section class="panel"><h2>ลงเวลาล่าสุด <small>บอทคิดให้แล้ว</small></h2>${WL.length ? `<div class="list">${WL.map(r => { const o = OT[r[0]];
+        return `<button data-go="${r[0]}"><span>${thd(r[0])}<small class="hint" style="display:block">${r[1]} – ${r[2]}${o && o[3] ? ' · 🌙' : ''}${isHol(r[0]) ? ' · วันหยุด' : ''}</small></span><span class="hint">${otTxt(o)}</span></button>`; }).join('')}</div>` : '<div class="hint">ยังไม่มี · เริ่มกดเข้างานในแชตได้เลย</div>'}</section>`
+    + `<section class="panel"><div class="hint">ลืมกด หรือเวลาไม่ตรง?</div><div class="chips"><button class="chip" data-edit="ot">✏️ แก้โอทีเอง</button><button class="chip" data-edit="lv">🏖 ลางาน</button></div></section>`;
+}
 function todayView(p) {
   const w = D.w;
   const day = rate * (1.5 * st.h[0] + 2 * st.h[1] + 3 * st.h[2]);
   const row = (i, name, x) => `<div class="step"><div><b>${name}</b><small>${rate ? 'ชม.ละ ' + money(rate * x) + ' บาท' : ''}</small></div>
     <div class="ctl"><button data-h="${i}" data-v="-0.5" aria-label="ลด">−</button><output>${st.h[i]}<small>ชม.</small></output><button data-h="${i}" data-v="0.5" aria-label="เพิ่ม">＋</button></div></div>`;
   const U = used(st.d.slice(0, 4));
-  return hero(p)
-    + (S.sal ? '' : `<div class="note">ยังไม่ได้ใส่เงินเดือน กดแท็บ <b>ตั้งค่า</b> ก่อน บอทถึงคิดเป็นเงินได้</div>`)
-    + `<section class="panel"><h2>ลงเวลา</h2><div class="status"><span class="dot" style="background:${w ? 'var(--good)' : 'var(--line)'}"></span><span>${w ? `เข้างานตั้งแต่ <b>${w.slice(11)}</b> ${w.slice(0, 10) !== today ? '(' + thd(w.slice(0, 10)) + ')' : ''} · เลิกงานกด <b>🔴 ออกงาน</b> ในแชต` : 'ยังไม่ได้เข้างาน · ถึงที่ทำงานกด <b>🟢 เข้างาน</b> ในแชต'}</span></div>
-      <div class="hint">กดออกงานแล้วบอทคิดโอทีให้เอง ถ้าลืมกดหรือคิดผิด แก้ด้านล่างได้</div></section>`
+  if (!st.edit) return homeView(p);
+  return `<button class="btn small" data-back="1">← กลับ</button>`
     + `<section class="panel"><div class="seg"><button class="${st.sub === 'ot' ? 'on' : ''}" data-sub="ot">⏱ โอที</button><button class="${st.sub === 'lv' ? 'on' : ''}" data-sub="lv">🏖 ลางาน</button></div>${dateCard()}</section>`
     + (st.sub === 'ot'
       ? (OT[st.d] ? `<div class="note">วันนี้มีบันทึกไว้แล้ว แก้ตัวเลขแล้วกดบันทึกได้เลย</div>` : '')
@@ -306,7 +317,8 @@ function render() {
   document.getElementById('app').innerHTML = (PREVIEW ? `<div class="demo">🧪 ทดลอง · ข้อมูลตัวอย่าง · กดบันทึกจะไม่ส่งเข้าบอท</div>` : '')
     + `<nav class="tabs" role="tablist">${T.map(([k, n]) => `<button class="tab" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join('')}</nav>`
     + ({today: todayView, days: daysView, dash: dashView, pay: payView, set: setView}[st.tab])(p);
-  if (st.tab === 'today') {
+  if (st.tab === 'today' && !st.edit) foot('');
+  else if (st.tab === 'today') {
     if (st.sub === 'ot') foot('✅ บันทึกโอที', {del: OT[st.d] ? '🗑 ลบ' : ''});
     else foot(st.t ? `✅ บันทึก${LV[st.t]}` : 'เลือกประเภทการลาก่อน', {disabled: !st.t, del: LVS[st.d] ? '🗑 ลบ' : ''});
   } else if (st.tab === 'set') foot('✅ บันทึกตั้งค่า');
@@ -315,9 +327,11 @@ function render() {
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.tab) { st.tab = b.dataset.tab; render(); window.scrollTo(0, 0); return; }
+  if (b.dataset.edit) { st.edit = true; st.sub = b.dataset.edit; st.d = today; loadDay(); render(); window.scrollTo(0, 0); return; }
+  if (b.dataset.back) { st.edit = false; render(); return; }
+  if (b.dataset.tab) { st.edit = false; st.tab = b.dataset.tab; render(); window.scrollTo(0, 0); return; }
   if (b.dataset.sub) { st.sub = b.dataset.sub; render(); return; }
-  if (b.dataset.go) { st.d = b.dataset.go; loadDay(); st.sub = LVS[st.d] && !OT[st.d] ? 'lv' : 'ot'; st.tab = 'today'; render(); window.scrollTo(0, 0); return; }
+  if (b.dataset.go) { st.d = b.dataset.go; loadDay(); st.sub = LVS[st.d] && !OT[st.d] ? 'lv' : 'ot'; st.tab = 'today'; st.edit = true; render(); window.scrollTo(0, 0); return; }
   if (b.dataset.d) { st.d = b.dataset.d; loadDay(); render(); return; }
   if (b.dataset.h) { const i = +b.dataset.h; st.h[i] = Math.max(0, Math.min(16, st.h[i] + +b.dataset.v)); render(); return; }
   if (b.dataset.t) { st.t = b.dataset.t; render(); return; }
