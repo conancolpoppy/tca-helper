@@ -143,7 +143,7 @@ function render() {
   const t = {ot: '⏱ ลงโอที', leave: '🏖 ลางาน', set: '⚙️ ตั้งค่า'};
   document.getElementById('app').innerHTML = `<div class="tabs">${Object.entries(t).map(([k, n]) => `<button data-m="${k}" class="${st.mode === k ? 'on' : ''}">${n}</button>`).join('')}</div>`
     + (st.mode === 'ot' ? otView() : st.mode === 'leave' ? leaveView() : setView())
-    + (!tg || !tg.initData ? `<p class="err" style="margin-top:10px">เปิดหน้านี้จากปุ่มในแชทบอทผู้ช่วยเท่านั้น ถึงจะบันทึกได้</p>` : '');
+    + (!inTg() ? `<p class="err" style="margin-top:10px">เปิดหน้านี้จากปุ่มในแชทบอทผู้ช่วยเท่านั้น ถึงจะบันทึกได้</p>` : '');
   const del = document.getElementById('del'), go = document.getElementById('go');
   del.classList.add('hidden');
   if (st.mode === 'ot') { go.textContent = '✅ บันทึกโอที'; if (OT[st.d]) { del.textContent = '🗑 ลบโอทีวันนี้'; del.classList.remove('hidden'); } }
@@ -151,10 +151,13 @@ function render() {
   else { go.textContent = '✅ บันทึกตั้งค่า'; }
   if (st.mode !== 'leave') go.disabled = false;
 }
+/* เปิดจากปุ่มคีย์บอร์ดของบอท → initData ว่างเป็นปกติ (Telegram ไม่ส่งให้) จึงเช็คแค่ว่าอยู่ใน Telegram */
+const inTg = () => !!(tg && typeof tg.sendData === 'function' && tg.platform && tg.platform !== 'unknown');
 function send(obj) {
-  if (!tg || !tg.initData) { alert('เปิดจากปุ่มในแชทบอทผู้ช่วยก่อนนะครับ'); return; }
+  if (!inTg()) { alert('เปิดจากปุ่มในแชทบอทผู้ช่วยก่อนนะครับ'); return; }
   try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
-  tg.sendData(JSON.stringify(obj));        // ส่งเข้าบอท แล้วหน้านี้ปิดเอง
+  try { tg.sendData(JSON.stringify(obj)); }        // ส่งเข้าบอท แล้วหน้านี้ปิดเอง
+  catch (e) { alert('ส่งไม่ได้ · เปิดจากปุ่มคีย์บอร์ดด้านล่างแชทส่วนตัวกับบอท (ไม่ใช่ลิงก์หรือปุ่ม Menu) แล้วลองใหม่'); }
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
